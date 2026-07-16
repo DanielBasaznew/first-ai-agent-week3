@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 from prompts import SYSTEM_PROMPT
+import time
+import sys
 
 load_dotenv()
 console = Console()
@@ -16,29 +18,49 @@ except Exception as e:
     console.print(f"[bold red]Initialization Error:[/bold red] Make sure GEMINI_API_KEY is set in your .env. Details: {e}")
     sys.exit(1)
 
-def call_llm(messages: list) -> str:
-    """Helper function to call Gemini 2.5 Flash with our running conversation history."""
-    try:
-        # Convert our custom dictionary format to Gemini API content format
-        contents = []
-        for msg in messages:
-            # We map system instruction to the system config, but send conversation history in contents
-            if msg["role"] == "system":
-                continue
-            contents.append(msg["content"])
+
+
+def call_llm(messages: list, max_retries: int = 3, initial_delay: int = 3) -> str:
+    """
+    Helper function to call Gemini 3.5 Flash with our running conversation history.
+    Includes automated exponential backoff retries for 503/429 network exceptions.
+    """
+    # Convert our custom dictionary format to Gemini API content format
+    contents = []
+    for msg in messages:
+        if msg["role"] == "system":
+            continue
+        contents.append(msg["content"])
+        
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model='gemini-3.5-flash',
+                contents=contents,
+                config={
+                    'system_instruction': SYSTEM_PROMPT,
+                    'temperature': 0.0,
+                }
+            )
+            return response.text
             
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=contents,
-            config={
-                'system_instruction': SYSTEM_PROMPT,
-                'temperature': 0.0, # Lower temperature for stable reasoning and strict tag-following
-            }
-        )
-        return response.text
-    except Exception as e:
-        console.print(f"[bold red]API Generation Error:[/bold red] {e}")
-        sys.exit(1)
+        except Exception as e:
+            error_str = str(e)
+            
+            # Check if it is a temporary server issue (503/UNAVAILABLE) or a rate limit (429)
+            if "503" in error_str or "429" in error_str or "UNAVAILABLE" in error_str:
+                # Calculate backoff delay: 3 seconds, then 6 seconds, then 12 seconds
+                sleep_time = initial_delay * (2 ** attempt)
+                console.print(f"\n[bold yellow]⚠️ [API Warning]: Server busy or throttled. Retrying in {sleep_time}s... (Attempt {attempt + 1}/{max_retries})[/bold yellow]")
+                time.sleep(sleep_time)
+            else:
+                # If it's a completely different error (credentials, bad syntax, etc.), crash immediately
+                console.print(f"[bold red]API Execution Error:[/bold red] {e}")
+                sys.exit(1)
+                
+    # If all retry attempts failed
+    console.print("\n[bold red]❌ Critical Error: Exhausted all retries without a response from Gemini API.[/bold red]")
+    sys.exit(1)
 
 def parse_tool_call(response_text: str) -> tuple[str, str]:
     """Parses a string formatted as [TOOL]: tool_name | tool_input using regular expressions."""
@@ -64,7 +86,7 @@ def execute_tool(tool_name: str, tool_input: str) -> str:
     else:
         return f"[OBSERVATION Error]: Tool '{tool_name}' not found. Available tools are: {list(TOOL_REGISTRY.keys())}"
 
-def run_agent(user_question: str, max_iterations: int = 5):
+def run_agent(user_question: str, max_iterations: int = 8):
     """The master ReAct loop: Think -> Act -> Observe -> Repeat."""
     console.print(Panel(f"[bold green]User Question:[/bold green] {user_question}", title="[bold white]Agent Starting Session[/bold white]", border_style="green"))
     
@@ -77,6 +99,10 @@ def run_agent(user_question: str, max_iterations: int = 5):
     for i in range(max_iterations):
         console.print(f"\n[bold yellow]--- 🔄 Iteration {i+1}/{max_iterations} ---[/bold yellow]")
         
+        # 2. Add the pause here to protect your API quota
+        console.print("[dim gray][SYSTEM]: Pausing for 2 seconds to protect API rate limits...[/dim gray]")
+        time.sleep(2)
+
         # Step 1: Query the Brain
         response = call_llm(messages)
         console.print(Panel(response.strip(), title=f"🧠 Model Step {i+1} Output", border_style="yellow"))
