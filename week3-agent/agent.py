@@ -49,13 +49,20 @@ def parse_tool_call(response_text: str) -> tuple[str, str]:
         return tool_name, tool_input
     return "unknown", "none"
 
-def execute_mock_tool(tool_name: str, tool_input: str) -> str:
-    """A safe placeholder tool to verify our loop's observational intake."""
-    console.print(f"🔧 [bold cyan]Executing Tool [{tool_name}] with input: '{tool_input}'[/bold cyan]...")
-    # Simulated responses based on typical testing scenarios
-    if "wikipedia" in tool_name.lower():
-        return f"Mock Wikipedia content for '{tool_input}': Paris is the capital of France, known for the Eiffel Tower."
-    return f"Mock response: The tool '{tool_name}' ran successfully with input '{tool_input}'."
+from tools import TOOL_REGISTRY
+
+def execute_tool(tool_name: str, tool_input: str) -> str:
+    """
+    Looks up a tool name in the registry and runs it with the provided input.
+    """
+    # Standardize string format to prevent simple casing mismatch issues
+    tool_name = tool_name.lower().strip()
+    
+    if tool_name in TOOL_REGISTRY:
+        # Call the real Python function dynamically!
+        return TOOL_REGISTRY[tool_name](tool_input)
+    else:
+        return f"[OBSERVATION Error]: Tool '{tool_name}' not found. Available tools are: {list(TOOL_REGISTRY.keys())}"
 
 def run_agent(user_question: str, max_iterations: int = 5):
     """The master ReAct loop: Think -> Act -> Observe -> Repeat."""
@@ -88,7 +95,7 @@ def run_agent(user_question: str, max_iterations: int = 5):
             tool_name, tool_input = parse_tool_call(response)
             
             # Step 3: Run local code and retrieve the payload
-            tool_result = execute_mock_tool(tool_name, tool_input)
+            tool_result = execute_tool(tool_name, tool_input)
             console.print(f"👁️ [bold magenta]Observation Received:[/bold magenta] {tool_result}")
             
             # Step 4: Inject the observation back into conversation memory for the next loop

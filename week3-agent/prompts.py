@@ -16,5 +16,11 @@ Once you receive an [OBSERVATION] from a tool, you MUST write a new [THOUGHT] an
 Never output multiple tools or multiple actions at once. Output EXACTLY one step.
 
 Available tools:
-(We will add our custom tools here tomorrow!)
+You have access to the following tools. You must use them if you need to calculate math or find dates:
+
+- calculator: Expects a raw mathematical expression string. Example: 347 * 28
+- get_date: Expects a descriptive text string to find current or future dates. Examples: "today", "90 days from now"
+
+To use a tool, you must output exactly this format:
+[TOOL]: tool_name | tool_input
 """
