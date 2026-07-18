@@ -25,7 +25,8 @@ You have access to the following tools:
   *TIP*: Good for historical facts, concepts, or stable encyclopedic knowledge.
 - search_web: Expects a short search string. Examples: "Current price of Bitcoin", "AI news today".
   *TIP*: Use this for live, real-time information, recent news, current dates, or rapidly changing prices that Wikipedia does not contain.
-
+- get_weather: Expects a simple city or location string. Examples: "Addis Ababa", "London".
+  *TIP*: Use this to fetch live, real-time meteorological weather data and temperatures.
 To use a tool, you must output exactly this format:
 [TOOL]: tool_name | tool_input
 """

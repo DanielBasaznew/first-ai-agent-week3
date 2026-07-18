@@ -99,15 +99,30 @@ def execute_tool(tool_name: str, tool_input: str) -> str:
             return f"[OBSERVATION Error]: The tool '{tool_name}' encountered a runtime issue. Details: {e}"
     else:
         return f"[OBSERVATION Error]: Tool '{tool_name}' not found. Available tools are: {list(TOOL_REGISTRY.keys())}"
-def run_agent(user_question: str, max_iterations: int = 8):
+def run_agent(user_question: str, history: list = None, max_iterations: int = 8):
     """The master ReAct loop: Think -> Act -> Observe -> Repeat."""
-    console.print(Panel(f"[bold green]User Question:[/bold green] {user_question}", title="[bold white]Agent Starting Session[/bold white]", border_style="green"))
+    console.print(
+        Panel(
+            f"[bold green]User Question:[/bold green] {user_question}",
+            title="[bold white]Agent Starting Session[/bold white]",
+            border_style="green"
+        )
+    )
     
-    # Initialize the session history with the core layout
+    if history is None:
+        history = []
+
+    # 1. Start with the system prompt instruction
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_question}
+        {"role": "system", "content": SYSTEM_PROMPT}
     ]
+    
+    # 2. Inject ALL previous clean conversational turns from the session
+    for turn in history:
+        messages.append(turn)
+        
+    # 3. Finally, append the brand-new question the user just typed
+    messages.append({"role": "user", "content": user_question})
     
     for i in range(max_iterations):
         console.print(f"\n[bold yellow]--- 🔄 Iteration {i+1}/{max_iterations} ---[/bold yellow]")
@@ -129,7 +144,7 @@ def run_agent(user_question: str, max_iterations: int = 8):
             logging.info(f"Final Answer Reached: {response}") # LOG THE SUCCESS
             # We extracted our answer, the loop is finished!
             console.print("\n[bold green]🏁 Final Answer Arrived![/bold green]")
-            return
+            return response
             
         elif "[TOOL]" in response:
             # Parse the target tool and argument
@@ -150,7 +165,7 @@ def run_agent(user_question: str, max_iterations: int = 8):
             messages.append({"role": "user", "content": "Please continue. Remember to use [TOOL] or [FINAL ANSWER] next."})
             
     console.print("\n[bold red]⚠️ Max iterations reached without finding a definitive answer.[/bold red]")
-
+    return None
 if __name__ == "__main__":
     # Test execution
     test_question = "What is the capital of France? Use wikipedia if you need to."

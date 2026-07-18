@@ -3,14 +3,16 @@ import logging
 from .calculator import calculate
 from .date_tool import get_date
 from .wikipedia_tool import search_wikipedia
-from .web_search import search_web  # 1. Added our new web search tool
+from .web_search import search_web  
+from tools.weather_tool import get_weather
 
 # Map tool names to their actual Python functions
 TOOL_REGISTRY = {
     "calculator": calculate,
     "get_date": get_date,
     "wikipedia": search_wikipedia,
-    "search_web": search_web         # 2. Registered the tool for the LLM
+    "get_weather": get_weather,
+    "search_web": search_web   
 }
 
 def execute_tool(name: str, argument: str) -> str:

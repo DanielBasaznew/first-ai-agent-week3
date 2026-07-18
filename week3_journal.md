@@ -122,3 +122,18 @@ Swapped out rate-limited key environments to a fully functional, high-demand sta
 
 #### Real-World Discovery
 Testing the system on complex, time-dependent historical queries (like tracing the exact presidential term timeline for Ethiopia) revealed how vital hybrid search architectures are. The model cleanly gathered historical frameworks using Wikipedia, identified a data gap regarding the exact modern transition date, immediately engaged `search_web` to retrieve news-scraping snippets from diverse URLs, and synthesized the data points into a single timeline. This shows that the true power of an engineering agent doesn't lie in flawless execution, but in its ability to navigate through structural formatting or data boundaries without crashing the running environment.
+
+# 📅 Day 5 Reflection: Conversational Memory Engines & Session Persistence
+What I Built & Solved
+Stateful Memory Architecture: Upgraded the agent from a stateless "one-shot" script to a conversational agent capable of maintaining context across sequential turns. This allows the system to accurately resolve anaphoras (like "he", "those", or "that") by preserving context.
+
+Decoupled History Tracing: Implemented a persistent history schema outside the core execution runtime. The run_agent loop now accepts a running list of prior clean exchanges (User Questions and Final Answers) and injects them seamlessly before processing new user inputs.
+
+Dual-Layer Telemetry Loggers: Built a post-session disk-writing mechanism triggered upon user exit (exit/quit). The script serializes the execution footprint into a structured .txt file, using a timestamped naming convention (session_YYYY-MM-DD_HH-MM.txt) to preserve records for auditing.
+
+Context Window Efficiency: Opted for a "Clean Exchange" history structure (storing only final question-answer pairs rather than raw intermediate steps, thought traces, and massive raw tool observations). This choice keeps the core system instructions closer to the LLM's active focus area.
+
+Zero-Dependency Meteorological Core: Built and registered an isolated get_weather tool module utilizing synchronous requests parsing of structured JSON data from wttr.in. This setup allows real-time local reporting without requiring paid third-party token keys.
+
+Real-World Discovery
+Testing the conversational loop with chained queries (e.g., tracking a subject, analyzing their companies, and filtering by valuation metrics) demonstrated the tension between contextual depth and context window saturation. While preserving every internal thought and raw tool snippet gives the agent maximum context, it exponentially increases token consumption and degrades performance due to the "lost-in-the-middle" effect. Managing state in production requires clear trade-offs: storing clean high-level responses keeps things lean, but building a rolling sliding window or using LLM-driven history summarization is essential for keeping multi-turn agents stable over long sessions.
