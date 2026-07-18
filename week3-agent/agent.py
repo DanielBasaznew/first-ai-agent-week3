@@ -10,6 +10,17 @@ import time
 import sys
 
 load_dotenv()
+
+import logging
+
+# Configure background file logger to append details silently to 'agent.log'
+logging.basicConfig(
+    filename='agent.log',
+    filemode='a', # 'a' means append so it saves previous test sessions too
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
 console = Console()
 
 try:
@@ -76,16 +87,18 @@ from tools import TOOL_REGISTRY
 def execute_tool(tool_name: str, tool_input: str) -> str:
     """
     Looks up a tool name in the registry and runs it with the provided input.
+    Guarantees a text observation back even if the underlying function crashes.
     """
-    # Standardize string format to prevent simple casing mismatch issues
     tool_name = tool_name.lower().strip()
     
     if tool_name in TOOL_REGISTRY:
-        # Call the real Python function dynamically!
-        return TOOL_REGISTRY[tool_name](tool_input)
+        try:
+            # Wrap the actual function call in a local safety net
+            return TOOL_REGISTRY[tool_name](tool_input)
+        except Exception as e:
+            return f"[OBSERVATION Error]: The tool '{tool_name}' encountered a runtime issue. Details: {e}"
     else:
         return f"[OBSERVATION Error]: Tool '{tool_name}' not found. Available tools are: {list(TOOL_REGISTRY.keys())}"
-
 def run_agent(user_question: str, max_iterations: int = 8):
     """The master ReAct loop: Think -> Act -> Observe -> Repeat."""
     console.print(Panel(f"[bold green]User Question:[/bold green] {user_question}", title="[bold white]Agent Starting Session[/bold white]", border_style="green"))
@@ -105,6 +118,7 @@ def run_agent(user_question: str, max_iterations: int = 8):
 
         # Step 1: Query the Brain
         response = call_llm(messages)
+        logging.info(f"Iteration {i+1} - Model Output:\n{response}") # LOG THE AI OUTPUT
         console.print(Panel(response.strip(), title=f"🧠 Model Step {i+1} Output", border_style="yellow"))
         
         # Keep track of assistant's thoughts/actions in memory
@@ -112,6 +126,7 @@ def run_agent(user_question: str, max_iterations: int = 8):
         
         # Step 2: Analyze Output Tags
         if "[FINAL ANSWER]" in response:
+            logging.info(f"Final Answer Reached: {response}") # LOG THE SUCCESS
             # We extracted our answer, the loop is finished!
             console.print("\n[bold green]🏁 Final Answer Arrived![/bold green]")
             return
@@ -119,9 +134,11 @@ def run_agent(user_question: str, max_iterations: int = 8):
         elif "[TOOL]" in response:
             # Parse the target tool and argument
             tool_name, tool_input = parse_tool_call(response)
+            logging.info(f"Executing Tool: {tool_name} | Input: {tool_input}") # LOG THE TOOL CALL
             
             # Step 3: Run local code and retrieve the payload
             tool_result = execute_tool(tool_name, tool_input)
+            logging.info(f"Observation Received: {tool_result}") # LOG THE RESULT
             console.print(f"👁️ [bold magenta]Observation Received:[/bold magenta] {tool_result}")
             
             # Step 4: Inject the observation back into conversation memory for the next loop

@@ -2,7 +2,7 @@ Week 3 Learning Journal: Building My First AI Agent
 
 This journal tracks my daily breakthroughs, code designs, and reflections as I build a custom, framework-free ReAct Agent in Python.
 
-📅 Day 1 Reflection: The ReAct Loop Skeleton
+# 📅 Day 1 Reflection: The ReAct Loop Skeleton
 
 1. The ReAct Architecture
 
@@ -48,7 +48,7 @@ The Crash Scenario: The Python code executing the tool will throw an unhandled e
 
 The Production Fix: To make our agent resilient, we must wrap every tool execution in a try/except block. If a tool fails, instead of letting Python crash, we catch the error and pass it back to the agent as a regular [OBSERVATION] (e.g., [OBSERVATION]: Error: Service temporarily offline. Please try another way.). This allows the agent to analyze the failure, think of a backup plan (like trying a different search tool), and keep running safely.
 
-📅 Day 2 Reflection: 📓 Agentic AI Developer
+# 📅 Day 2 Reflection: 📓 Agentic AI Developer
 
 
 ## 🚀 Today's Milestone: Bringing the ReAct Loop to Life
@@ -83,3 +83,42 @@ The system instructions inside `prompts.py` acted as a solid behavioral contract
 #### 3. Why Agents Need Strict System Tool Constraints
 While modern LLMs like `gemini-2.5-flash` are highly intelligent, they are notoriously poor at mental arithmetic. When left to calculate without a tool, they rely on token pattern-matching, which often results in subtle, incorrect calculations. 
 * *Engineering Insight:* To build reliable production agents, we must enforce rigid prompt instructions that restrict the model from performing calculations internally and force it to yield to safe, sandboxed sandboxes like our AST calculator.
+
+# 📅 Day 3 Reflection: Wikipedia tool intergration to my Agent
+
+## What I Built Today
+Wikipedia Search Tool: Built a custom tool using the wikipedia-api library. Configured a strict 500-character truncation limit to protect the LLM's context window, and implemented a custom User-Agent string to safely comply with Wikimedia's policies.
+
+Rich Terminal Formatting: Integrated the Rich library to color-code each stage of the agent loop (Yellow for [THOUGHT], Blue for [TOOL], Green for [OBSERVATION], and Bold White for the [FINAL ANSWER]).
+
+Multi-Step Problem Solving: Tested the agent on complex queries requiring logical reasoning, like identifying the current Prime Minister of the UK amidst real-time leadership transitions in 2026.
+
+## Challenges Faced & Solutions
+The Truncation/Loop Trap:
+
+Problem: The agent got stuck in a repetitive loop when Wikipedia observations were truncated right before the key answer was visible.
+
+Solution: Upgraded the system prompt with strict rules forbidding consecutive identical searches, and increased the agent loop's max_iterations from 5 to 8 to give it breathing room for deeper paths.
+
+API Limits & 503 Overloads:
+
+Problem: Encountered 503 UNAVAILABLE and rate limit errors during active loop testing.
+
+Solution:
+
+Implemented a production-grade exponential backoff retry loop directly inside call_llm using a Python try/except block.
+
+Enforced a mandatory 2-second sleep delay between iteration steps to respect API limits.
+
+Swapped out rate-limited key environments to a fully functional, high-demand stable model setup using gemini-3.5-flash.
+
+# 📅 Day 4 Reflection: Web Search Integration & Fault-Tolerant Tool Registries
+
+#### What I Built & Solved
+*   **Integrated Multi-Source Intelligence**: Successfully built a live `search_web` tool using the `duckduckgo-search` library, transitioning the agent from a static encyclopedic environment to real-time information retrieval.
+*   **Centralized Tool Routing & Registry**: Standardized the initialization pattern inside `tools/__init__.py`. Created an explicit mapping via `TOOL_REGISTRY` and wrapped executions within a robust `execute_tool` entry point.
+*   **Transient Failure Recovery**: Implemented a loops-based retry pattern (`max_retries = 2`) embedded directly within the tool executor. The system now transparently absorbs network hiccups or API rate limit spikes by executing a 1-second backoff pause before re-trying the operation.
+*   **Error-to-Information Loop (Graceful Degradation)**: Configured system boundaries so that unmapped tool names or script crashes do not trigger raw Python stack-trace terminations. Instead, they are captured dynamically, sanitized into an `[OBSERVATION Error]` string, and routed back to the LLM context for real-time path adjustments.
+
+#### Real-World Discovery
+Testing the system on complex, time-dependent historical queries (like tracing the exact presidential term timeline for Ethiopia) revealed how vital hybrid search architectures are. The model cleanly gathered historical frameworks using Wikipedia, identified a data gap regarding the exact modern transition date, immediately engaged `search_web` to retrieve news-scraping snippets from diverse URLs, and synthesized the data points into a single timeline. This shows that the true power of an engineering agent doesn't lie in flawless execution, but in its ability to navigate through structural formatting or data boundaries without crashing the running environment.
