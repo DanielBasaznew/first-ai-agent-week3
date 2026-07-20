@@ -42,3 +42,4 @@ def get_weather(location: str) -> str:
 if __name__ == "__main__":
     print(get_weather("Addis Ababa"))
     print(get_weather("London"))
+    print(get_weather("Harar"))

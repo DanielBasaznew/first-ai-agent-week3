@@ -165,7 +165,7 @@ def run_agent(user_question: str, history: list = None, max_iterations: int = 8)
             messages.append({"role": "user", "content": "Please continue. Remember to use [TOOL] or [FINAL ANSWER] next."})
             
     console.print("\n[bold red]⚠️ Max iterations reached without finding a definitive answer.[/bold red]")
-    return None
+    return "[FINAL ANSWER]: I apologize, but I reached my maximum iteration limits before finding a definitive answer to your question."
 if __name__ == "__main__":
     # Test execution
     test_question = "What is the capital of France? Use wikipedia if you need to."
