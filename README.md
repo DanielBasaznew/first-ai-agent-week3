@@ -6,53 +6,63 @@ A lightweight, robust AI Agent engine built completely from scratch in Python fo
 
 The agent executes an iterative loop processing cycle: **User Query ➔ Thought ➔ Action/Tool Execution ➔ Observation ➔ Reflection**. 
 
+```text
 +-------------------------------------------------------+
-|                      User Input                       |
+|                       User Input                      |
 +-------------------------------------------------------+
-|
-v
-+------------------------------+
+                           |
+                           v
+            +------------------------------+
 +----------->|   [THOUGHT] Reasoning Loop   |<-----------+
-|            +------------------------------+            |
-|                           |                            |
-|                           v                            |
-|             +----------------------------+             |
-|             |  [TOOL] Selection & Call   |             |
-|             +----------------------------+             |
-|                           |                            |
-|                           v                            |
-|            +------------------------------+            |
-|            | [OBSERVATION] Tool Execution |            |
-|            +------------------------------+            |
-|                           |                            |
-+---------------------------+                            |
-|
-v
-+-------------------------------+
-| [FINAL ANSWER] Output Formatter|
-+-------------------------------+
+|           +------------------------------+            |
+|                          |                            |
+|                          v                            |
+|            +----------------------------+             |
+|            |  [TOOL] Selection & Call   |             |
+|            +----------------------------+             |
+|                          |                            |
+|                          v                            |
+|           +------------------------------+            |
+|           | [OBSERVATION] Tool Execution |            |
+|           +------------------------------+            |
+|                          |                            |
++---------------------------+                           |
+                           |
+                           v
+           +-------------------------------+
+           | [FINAL ANSWER] Output Formatter|
+           +-------------------------------+
 
-
-### ⚙️ Hardened Defensive Guards
+```
+# ⚙️ Hardened Defensive Guards
 To transition from a conceptual pipeline into a stable application, the engine implements several deterministic engineering wrappers:
-* **Max Iterations Emergency Guard:** Enforces a rigid iteration threshold loop break to intercept infinite conversational reasoning traps, returning an explicit string diagnostic instead of crashing the system history tracker.
-* **Global Registry Router & Safety Net:** Intercepts hallucinated tool strings dynamically by validating requests against an explicit dictionary dispatch matrix, automatically retrying flaky network operations.
-* **Strict Context Window Truncation:** Intercepts out-of-bounds tokens by cropping downstream search outputs to target thresholds, defending the LLM context attention threshold.
-* **Network & Empty Input Sanitizers:** Enforces runtime timeouts across asynchronous I/O sockets and filters whitespace values before making network requests.
 
-## 🛠️ Built-in Tool Ecosystem
+Max Iterations Emergency Guard: Enforces a rigid iteration threshold loop break to intercept infinite conversational reasoning traps, returning an explicit string diagnostic instead of crashing the system history tracker.
 
-1. **`calculator`**: Evaluates string-based mathematical formulations. Optimized for compound equation mapping.
-2. **`get_date`**: Translates relative descriptive string queries into target timestamps.
-3. **`wikipedia`**: Fetches clean, historical contexts from the Wikipedia summary endpoint.
-4. **`search_web`**: Connects via DuckDuckGo text scraping to grab real-time live info.
-5. **`get_weather`**: Fetches structured weather payloads instantly from `wttr.in`.
+Global Registry Router & Safety Net: Intercepts hallucinated tool strings dynamically by validating requests against an explicit dictionary dispatch matrix, automatically retrying flaky network operations.
 
-## 🚀 Installation & Execution
+Strict Context Window Truncation: Intercepts out-of-bounds tokens by cropping downstream search outputs to target thresholds, defending the LLM context attention threshold.
 
-### 1. Set Up the Environment
+Network & Empty Input Sanitizers: Enforces runtime timeouts across asynchronous I/O sockets and filters whitespace values before making network requests.
+```
+```
+# 🛠️ Built-in Tool Ecosystem
+calculator: Evaluates string-based mathematical formulations. Optimized for compound equation mapping.
+
+get_date: Translates relative descriptive string queries into target timestamps.
+
+wikipedia: Fetches clean, historical contexts from the Wikipedia summary endpoint.
+
+search_web: Connects via DuckDuckGo text scraping to grab real-time live info.
+
+get_weather: Fetches structured weather payloads instantly from wttr.in.
+```
+```
+# 🚀 Installation & Execution
+1. Set Up the Environment
 Clone the repository, create a virtual environment, and install dependencies:
-```bash
+
+Bash
 python -m venv .venv
 source .venv/Scripts/activate # On Windows MINGW/Bash
 pip install requests wikipedia-api duckduckgo-search rich python-dotenv
@@ -65,11 +75,11 @@ GEMINI_API_KEY=your_api_key_here
 Bash
 python week3-agent/main.py
 
-``` 
 # 📊 Live Verification Session Run
-
+```
+Plaintext
 DELL@Daniel-Basaznew MINGW64 ~/Documents/Code/first-ai-agent-week3 (main)
-$ c:/Users/DELL/Documents/Code/first-ai-agent-week3/.venv/Scripts/python.exe c:/Users/DELL/Documents/Code/first-ai-agent-week3/week3-agent/main.py
+$ c:/Users/DELL/Documents/Code/first-ai-agent-week3/.venv/Scripts/python.exe c:/Users/DELL/Documents/Code/first-ai-agent-week3/week3-agent/main.py ```
 ====================================================================
                  🕵️‍♂️ WELCOME TO THE ReAct AGENT ENGINE              
 ====================================================================
@@ -94,7 +104,7 @@ Type 'exit' to close the agent session.
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 👁️ Observation Received: 1. Title: 2022 FIFA World Cup - Wikipedia
    Snippet: The 2022 FIFA World Cup was an international football tournament won by Argentina, who defeated France on penalties in the final.
-   URL: https://en.wikipedia.org/wiki/2022_FIFA_World_Cup
+   URL: [https://en.wikipedia.org/wiki/2022_FIFA_World_Cup](https://en.wikipedia.org/wiki/2022_FIFA_World_Cup)
 
 --- 🔄 Iteration 2/8 ---
 [SYSTEM]: Pausing for 2 seconds to protect API rate limits...
@@ -109,28 +119,28 @@ Type 'exit' to close the agent session.
 --- 🔄 Iteration 3/8 ---
 [SYSTEM]: Pausing for 2 seconds to protect API rate limits...
 ╭─────────────────────────────────────────────────────────────────── 🧠 Model Step 3 Output ────────────────────────────────────────────────────────────────────╮
-│ [THOUGHT]: The Argentine Football Association was founded in 1893. The current year is 2026. I will use the calculator tool                                    │
-│ to compute exactly how many years ago that was (2026 - 1893).                                                                                                  │
-│                                                                                                                                                                │
-│ [TOOL]: calculator | 2026 - 1893                                                                                                                               │
+│ [THOUGHT]: The Argentine Football Association was founded in 1893. The current year is 2026. I will use the calculator tool                                   │
+│ to compute exactly how many years ago that was (2026 - 1893).                                                                                                 │
+│                                                                                                                                                               │
+│ [TOOL]: calculator | 2026 - 1893                                                                                                                              │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 👁️ Observation Received: 133
 
 --- 🔄 Iteration 4/8 ---
 [SYSTEM]: Pausing for 2 seconds to protect API rate limits...
 ╭─────────────────────────────────────────────────────────────────── 🧠 Model Step 4 Output ────────────────────────────────────────────────────────────────────╮
-│ [THOUGHT]: The calculation shows it was 133 years ago. Now, the final requirement is to check the exact calendar text for                                      │
-│ today's full date tracking.                                                                                                                                    │
-│                                                                                                                                                                │
-│ [TOOL]: get_date | "today"                                                                                                                                     │
+│ [THOUGHT]: The calculation shows it was 133 years ago. Now, the final requirement is to check the exact calendar text for                                     │
+│ today's full date tracking.                                                                                                                                   │
+│                                                                                                                                                               │
+│ [TOOL]: get_date | "today"                                                                                                                                    │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 👁️ Observation Received: 2026-07-20
 
 --- 🔄 Iteration 5/8 ---
 [SYSTEM]: Pausing for 2 seconds to protect API rate limits...
 ╭─────────────────────────────────────────────────────────────────── 🧠 Model Step 5 Output ────────────────────────────────────────────────────────────────────╮
-│ [FINAL ANSWER]: The winner of the 2022 FIFA World Cup was Argentina. The Argentine Football Association (AFA) was founded on                                   │
-│ February 21, 1893, which was exactly 133 years ago relative to the current year 2026. Today's date is July 20, 2026.                                           │
+│ [FINAL ANSWER]: The winner of the 2022 FIFA World Cup was Argentina. The Argentine Football Association (AFA) was founded on                                  │
+│ February 21, 1893, which was exactly 133 years ago relative to the current year 2026. Today's date is July 20, 2026.                                          │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 🏁 Final Answer Arrived!
@@ -143,7 +153,6 @@ Shutting down agent session. Goodbye!
 (.venv) 
 DELL@Daniel-Basaznew MINGW64 ~/Documents/Code/first-ai-agent-week3 (main)
 
-``` 
 ```
 # 💡 Engineering Insights
 Building a ReAct loop from the ground up proves that an agent's capability isn't derived from complex third-party abstraction layers, but from clear systemic execution criteria inside a system prompt. By strictly regulating how the agent splits its thinking phases from its tool usage phases, a standard LLM can be organized into a reliable automated system capable of handling complex internet workflows safely.
